@@ -31,6 +31,7 @@ public class PizzaGUIFrame extends JFrame
     JRadioButton thinCrust;
     JRadioButton regularCrust;
     JRadioButton deepDishCrust;
+    JRadioButton invisibleButton;
 
     //Button Group
     ButtonGroup crustButtons;
@@ -51,6 +52,10 @@ public class PizzaGUIFrame extends JFrame
 
     //JTextAres
     JTextArea receipt;
+
+    //booleans
+    boolean crustSelected;
+
 
     //for JoptionPane
     int reply;
@@ -129,8 +134,13 @@ public class PizzaGUIFrame extends JFrame
         regularCrust = new JRadioButton("Regular");
         deepDishCrust = new JRadioButton("Deep Dish");
 
+        invisibleButton = new JRadioButton();
+        invisibleButton.setVisible(false);
+        invisibleButton.setSelected(false);
+
         crustButtons = new ButtonGroup();
 
+        crustButtons.add(invisibleButton);
         crustButtons.add(thinCrust);
         crustButtons.add(regularCrust);
         crustButtons.add(deepDishCrust);
@@ -191,7 +201,7 @@ public class PizzaGUIFrame extends JFrame
 
         orderbtn = new JButton("Order Now!");
         orderbtn.addActionListener((ActionEvent ae) ->
-                makeReceipt());
+                validInput());
 
         clearbtn = new JButton("Clear Order");
         clearbtn.addActionListener((ActionEvent ae) -> clearBoard());
@@ -211,71 +221,81 @@ public class PizzaGUIFrame extends JFrame
         beforeCalcTotal();
         plusTax();
 
+        receipt.append("\n=======================================");
 
+        receipt.append(String.format("\n%-10s%8s%36.2f", sizeSelect.getSelectedItem(),getJButton(), sizePrice));
 
-        receipt.append("=======================================");
-        receipt.append("\n"+sizeSelect.getSelectedItem() + " & " + getJButton() +"          Price: " + sizePrice);
-
+        receipt.append("\n");
 
         if(pepBox.isSelected())
         {
-            receipt.append("\n"+ "Pepperoni"+"         " + "1.00");
+            receipt.append("\nPepperoni"+ String.format("%51s", "1.00"));
         }
         if(mushroomBox.isSelected())
         {
-            receipt.append("\n"+ "Mushrooms"+"         " + "1.00");
+
+            receipt.append("\nMushrooms"+ String.format("%49s", "1.00"));
         }
         if(pineappleBox.isSelected())
         {
-            receipt.append("\n"+ "Pineapple"+"         " + "1.00");
+            receipt.append("\nPineapple"+ String.format("%51s", "1.00"));
         }
         if(hamBox.isSelected())
         {
-            receipt.append("\n"+ "Ham"+"         " + "1.00");
+            receipt.append("\nHam"+ String.format("%60s", "1.00"));
         }
         if(oliveBox.isSelected())
         {
-            receipt.append("\n"+ "Olives"+"         " + "1.00");
+            receipt.append("\nOlives"+ String.format("%57s", "1.00"));
         }
         if(pepperBox.isSelected())
         {
-            receipt.append("\n"+ "Peppers"+"         " + "1.00");
+            receipt.append("\nPeppers"+ String.format("%54s", "1.00"));
         }
 
         receipt.append("\n");
         receipt.append("\n");
 
-        receipt.append("\nSub Total: " + beforeTax);
-        receipt.append("\nTax: " + taxTotal);
+        receipt.append("\n"+ String.format("%-25s%37.2f", "Sub Total: ", beforeTax));
+        receipt.append("\n"+ String.format("%-25s%40.2f", "Tax: ", taxTotal));
         receipt.append("\n------------------------------------------------------------------------");
-        receipt.append("\nTotal: " + finalTotal);
+        receipt.append("\n"+ String.format("%-25s%40.2f", "Total: ", finalTotal));
         receipt.append("\n=======================================");
 
     }
 
     private String getJButton()
     {
+        crustSelected = false;
+
         if (thinCrust.isSelected())
         {
+            crustSelected = true;
+
             return "Thin";
         }
 
         if (regularCrust.isSelected())
         {
+            crustSelected = true;
+
             return "Regular";
         }
 
         if (deepDishCrust.isSelected())
         {
+            crustSelected = true;
+
             return "Deep Dish";
         }
 
-        return "Regular";
+        crustSelected = false;
+        return "n/a";
     }
 
     private void beforeCalcTotal()
     {
-        toppingsTotal = 0;
+         toppingsTotal= 0;
 
         if(pepBox.isSelected())
         {
@@ -330,8 +350,26 @@ public class PizzaGUIFrame extends JFrame
         }
 
 
-        beforeTax = sizePrice + toppingsTotal;
 
+
+       beforeTax = sizePrice + toppingsTotal;
+
+    }
+
+    private void validInput()
+    {
+        getJButton();
+        beforeCalcTotal();
+
+        if(crustSelected==true && sizePrice > 0 && toppingsTotal > 0)
+        {
+            makeReceipt();
+        }
+
+        else
+        {
+            JOptionPane.showMessageDialog(null,"Please Select a Size, Crust, and Topping");
+        }
     }
 
     private void plusTax()
@@ -359,9 +397,11 @@ public class PizzaGUIFrame extends JFrame
             sizeSelect.setSelectedIndex(0);
 
         //clears crust
+
             thinCrust.setSelected(false);
             regularCrust.setSelected(false);
             deepDishCrust.setSelected(false);
+            invisibleButton.setSelected(true);
 
         //clears toppings
             pepBox.setSelected(false);
@@ -378,6 +418,7 @@ public class PizzaGUIFrame extends JFrame
             beforeTax = 0;
             toppingsTotal = 0;
             sizePrice = 0;
+            crustSelected = false;
 
 
     }
