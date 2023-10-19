@@ -60,12 +60,12 @@ public class PizzaGUIFrame extends JFrame
     //for JoptionPane
     int reply;
 
+    //variables
     double beforeTax = 0;
     double toppingsTotal = 0;
     double sizePrice = 0;
     double taxTotal = 0;
     double finalTotal = 0;
-
     
 
     public PizzaGUIFrame()
@@ -93,7 +93,7 @@ public class PizzaGUIFrame extends JFrame
         setVisible(true);
     }
 
-    private void createBottomPnl()
+    private void createBottomPnl() //puts receipt panel and button panel together
     {
         bottomPnl = new JPanel();
         bottomPnl.setLayout(new BorderLayout());
@@ -114,6 +114,7 @@ public class PizzaGUIFrame extends JFrame
         sizePnl.setBorder(new TitledBorder((new LineBorder(black, 4 )), "Pick A Size!"));
         sizePnl.setPreferredSize(new Dimension(300, 300));
 
+        //Creates Selections
         String sizes[] = {"","Small","Medium", "Large", "Super"};
         sizeSelect = new JComboBox(sizes);
 
@@ -134,12 +135,15 @@ public class PizzaGUIFrame extends JFrame
         regularCrust = new JRadioButton("Regular");
         deepDishCrust = new JRadioButton("Deep Dish");
 
+        //for when the board is cleared
         invisibleButton = new JRadioButton();
         invisibleButton.setVisible(false);
         invisibleButton.setSelected(false);
 
+        //groups JRadioButtons
         crustButtons = new ButtonGroup();
 
+        //adds to panels
         crustButtons.add(invisibleButton);
         crustButtons.add(thinCrust);
         crustButtons.add(regularCrust);
@@ -160,6 +164,7 @@ public class PizzaGUIFrame extends JFrame
 
         toppingsPnl.setLayout(new FlowLayout());
 
+        // creates CheckBoxes
         pepBox = new JCheckBox("Pepperoni");
         oliveBox = new JCheckBox("Olives");
         mushroomBox = new JCheckBox("Mushrooms");
@@ -216,7 +221,7 @@ public class PizzaGUIFrame extends JFrame
         buttonPnl.add(quitbtn);
     }
 
-    private void makeReceipt()
+    private void makeReceipt() //makes the layout of the receipt and prints to JTextarea
     {
         beforeCalcTotal();
         plusTax();
@@ -266,7 +271,7 @@ public class PizzaGUIFrame extends JFrame
 
     private String getJButton()
     {
-        crustSelected = false;
+        crustSelected = false; //to see if the user has selected a crust
 
         if (thinCrust.isSelected())
         {
@@ -293,7 +298,7 @@ public class PizzaGUIFrame extends JFrame
         return "n/a";
     }
 
-    private void beforeCalcTotal()
+    private void beforeCalcTotal() //gets before tax total
     {
          toppingsTotal= 0;
 
@@ -350,20 +355,18 @@ public class PizzaGUIFrame extends JFrame
         }
 
 
-
-
        beforeTax = sizePrice + toppingsTotal;
 
     }
 
-    private void validInput()
+    private void validInput()// checks to see if the user has selected a crust, size, and ingredient
     {
-        getJButton();
-        beforeCalcTotal();
+        getJButton(); //checks to see if crust is selected
+        beforeCalcTotal();//checks for sizePrice and toppingsTotal
 
         if(crustSelected==true && sizePrice > 0 && toppingsTotal > 0)
         {
-            makeReceipt();
+            makeReceipt();// makes the receipt
         }
 
         else
@@ -372,26 +375,26 @@ public class PizzaGUIFrame extends JFrame
         }
     }
 
-    private void plusTax()
+    private void plusTax() //calculates the tax on the order
     {
-        beforeCalcTotal();
+        beforeCalcTotal(); //gets the sub-total
 
         taxTotal = beforeTax * 0.07;
         finalTotal = taxTotal + beforeTax;
     }
 
-    private void quitProgram()
+    private void quitProgram()//checks to see if the user want to quit the program
     {
         reply=JOptionPane.showConfirmDialog(null, "Are you sure you want to quit?");
 
-        if (reply == JOptionPane.YES_OPTION) //resets board
+        if (reply == JOptionPane.YES_OPTION) //exits form
         {
             System.exit(0);
         }
 
     }
 
-    private void clearBoard()
+    private void clearBoard()// clears the form
     {
         //clears sizeSelect
             sizeSelect.setSelectedIndex(0);
