@@ -18,7 +18,7 @@ public class PizzaGUIFrame extends JFrame
     JPanel sizePnl;
     JPanel crustPnl;
     JPanel toppingsPnl;
-    JScrollPane receiptPnl;
+    JPanel receiptPnl;
     JPanel buttonPnl;
     JPanel bottomPnl;
 
@@ -31,6 +31,9 @@ public class PizzaGUIFrame extends JFrame
     JRadioButton thinCrust;
     JRadioButton regularCrust;
     JRadioButton deepDishCrust;
+
+    //Button Group
+    ButtonGroup crustButtons;
 
     //JComboBox
     JComboBox sizeSelect;
@@ -52,31 +55,30 @@ public class PizzaGUIFrame extends JFrame
     //for JoptionPane
     int reply;
 
-    //ints for selected
-    int selSize;
-    int amountToppings;
-    int selTopping = 0;
+    double beforeTax = 0;
+    double toppingsTotal = 0;
+    double sizePrice = 0;
+    double taxTotal = 0;
+    double finalTotal = 0;
+
     
 
     public PizzaGUIFrame()
     {
         mainPnl = new JPanel();
-        mainPnl.setLayout(new GridLayout(5,1));
+        mainPnl.setLayout(new BorderLayout());
 
         createSizePnl();
-        mainPnl.add(sizePnl);
+        mainPnl.add(sizePnl, BorderLayout.WEST);
 
         createCrustPnl();
-        mainPnl.add(crustPnl);
+        mainPnl.add(crustPnl, BorderLayout.CENTER);
 
         createToppingsPnl();
-        mainPnl.add(toppingsPnl);
+        mainPnl.add(toppingsPnl, BorderLayout.EAST);
 
-        createReceiptPnl();
-        mainPnl.add(receiptPnl);
-
-        createButtonPnl();
-        mainPnl.add(buttonPnl);
+        createBottomPnl();
+        mainPnl.add(bottomPnl, BorderLayout.SOUTH);
 
 
         add(mainPnl);
@@ -86,18 +88,33 @@ public class PizzaGUIFrame extends JFrame
         setVisible(true);
     }
 
+    private void createBottomPnl()
+    {
+        bottomPnl = new JPanel();
+        bottomPnl.setLayout(new BorderLayout());
+        bottomPnl.setPreferredSize(new Dimension(900, 450));
+
+        createReceiptPnl();
+        createButtonPnl();
+
+        bottomPnl.add(receiptPnl, BorderLayout.NORTH);
+        bottomPnl.add(buttonPnl, BorderLayout.SOUTH);
+    }
+
     private void createSizePnl()
     {
         sizePnl = new JPanel();
 
         //border created for SizePnl
         sizePnl.setBorder(new TitledBorder((new LineBorder(black, 4 )), "Pick A Size!"));
+        sizePnl.setPreferredSize(new Dimension(300, 300));
 
-        String sizes[] = {"Small","Medium", "Large", "Super"};
+        String sizes[] = {"","Small","Medium", "Large", "Super"};
         sizeSelect = new JComboBox(sizes);
 
         sizePnl.add(sizeSelect);
     }
+
 
     private void createCrustPnl()
     {
@@ -105,11 +122,18 @@ public class PizzaGUIFrame extends JFrame
 
         //border created for CrustPnl
         crustPnl.setBorder(new TitledBorder((new LineBorder(black, 4 )), "Pick A Crust!"));
+        crustPnl.setPreferredSize(new Dimension(300, 300));
 
         //initialize the buttons
         thinCrust = new JRadioButton("Thin");
         regularCrust = new JRadioButton("Regular");
         deepDishCrust = new JRadioButton("Deep Dish");
+
+        crustButtons = new ButtonGroup();
+
+        crustButtons.add(thinCrust);
+        crustButtons.add(regularCrust);
+        crustButtons.add(deepDishCrust);
 
         crustPnl.add(thinCrust);
         crustPnl.add(regularCrust);
@@ -122,6 +146,7 @@ public class PizzaGUIFrame extends JFrame
         toppingsPnl = new JPanel();
 
         toppingsPnl.setBorder(new TitledBorder((new LineBorder(black, 4 )), "Pick Some Toppings!"));
+        toppingsPnl.setPreferredSize(new Dimension(300, 300));
 
         toppingsPnl.setLayout(new FlowLayout());
 
@@ -139,19 +164,15 @@ public class PizzaGUIFrame extends JFrame
         toppingsPnl.add(hamBox);
         toppingsPnl.add(pepperBox);
 
-        getTotalToppings();
-
-    }
-
-    private void getTotalToppings() {
     }
 
 
     private void createReceiptPnl()
     {
-        receiptPnl = new JScrollPane();
+        receiptPnl = new JPanel();
+        receiptPnl.setPreferredSize(new Dimension(900, 400));
 
-        receipt = new JTextArea(40,50);
+        receipt = new JTextArea(20,40);
         receipt.setEditable(false);
 
         receiptPnl.setBorder(new TitledBorder((new LineBorder(black, 4 )), "Receipt:"));
@@ -166,11 +187,14 @@ public class PizzaGUIFrame extends JFrame
     {
         buttonPnl = new JPanel();
         buttonPnl.setLayout(new GridLayout(1,3));
+        buttonPnl.setPreferredSize(new Dimension(900, 50));
 
         orderbtn = new JButton("Order Now!");
-        orderbtn.addActionListener((ActionEvent ae) -> calcTotal());
+        orderbtn.addActionListener((ActionEvent ae) ->
+                makeReceipt());
 
         clearbtn = new JButton("Clear Order");
+        clearbtn.addActionListener((ActionEvent ae) -> clearBoard());
 
         quitbtn = new JButton("Quit");
         quitbtn.addActionListener((ActionEvent ae) -> quitProgram());
@@ -182,9 +206,140 @@ public class PizzaGUIFrame extends JFrame
         buttonPnl.add(quitbtn);
     }
 
-    private void calcTotal()
+    private void makeReceipt()
     {
+        beforeCalcTotal();
+        plusTax();
 
+
+
+        receipt.append("=======================================");
+        receipt.append("\n"+sizeSelect.getSelectedItem() + " & " + getJButton() +"          Price: " + sizePrice);
+
+
+        if(pepBox.isSelected())
+        {
+            receipt.append("\n"+ "Pepperoni"+"         " + "1.00");
+        }
+        if(mushroomBox.isSelected())
+        {
+            receipt.append("\n"+ "Mushrooms"+"         " + "1.00");
+        }
+        if(pineappleBox.isSelected())
+        {
+            receipt.append("\n"+ "Pineapple"+"         " + "1.00");
+        }
+        if(hamBox.isSelected())
+        {
+            receipt.append("\n"+ "Ham"+"         " + "1.00");
+        }
+        if(oliveBox.isSelected())
+        {
+            receipt.append("\n"+ "Olives"+"         " + "1.00");
+        }
+        if(pepperBox.isSelected())
+        {
+            receipt.append("\n"+ "Peppers"+"         " + "1.00");
+        }
+
+        receipt.append("\n");
+        receipt.append("\n");
+
+        receipt.append("\nSub Total: " + beforeTax);
+        receipt.append("\nTax: " + taxTotal);
+        receipt.append("\n------------------------------------------------------------------------");
+        receipt.append("\nTotal: " + finalTotal);
+        receipt.append("\n=======================================");
+
+    }
+
+    private String getJButton()
+    {
+        if (thinCrust.isSelected())
+        {
+            return "Thin";
+        }
+
+        if (regularCrust.isSelected())
+        {
+            return "Regular";
+        }
+
+        if (deepDishCrust.isSelected())
+        {
+            return "Deep Dish";
+        }
+
+        return "Regular";
+    }
+
+    private void beforeCalcTotal()
+    {
+        toppingsTotal = 0;
+
+        if(pepBox.isSelected())
+        {
+            toppingsTotal++;
+        }
+
+        if(oliveBox.isSelected())
+        {
+            toppingsTotal++;
+        }
+
+        if(mushroomBox.isSelected())
+        {
+            toppingsTotal++;
+        }
+
+        if(pineappleBox.isSelected())
+        {
+            toppingsTotal++;
+        }
+
+        if(hamBox.isSelected())
+        {
+            toppingsTotal++;
+        }
+
+        if(pepperBox.isSelected())
+        {
+            toppingsTotal++;
+        }
+
+
+        //gets price based on size
+        if(sizeSelect.getSelectedItem()=="Small")
+        {
+            sizePrice = 8.00;
+        }
+
+        if(sizeSelect.getSelectedItem()=="Medium")
+        {
+            sizePrice = 12.00;
+        }
+
+        if(sizeSelect.getSelectedItem()=="Large")
+        {
+            sizePrice = 16.00;
+        }
+
+        if(sizeSelect.getSelectedItem()=="Super")
+        {
+            sizePrice = 20.00;
+        }
+
+
+        beforeTax = sizePrice + toppingsTotal;
+
+    }
+
+    private void plusTax()
+    {
+        beforeCalcTotal();
+
+        taxTotal = beforeTax * 0.07;
+        finalTotal = taxTotal + beforeTax;
     }
 
     private void quitProgram()
@@ -195,6 +350,35 @@ public class PizzaGUIFrame extends JFrame
         {
             System.exit(0);
         }
+
+    }
+
+    private void clearBoard()
+    {
+        //clears sizeSelect
+            sizeSelect.setSelectedIndex(0);
+
+        //clears crust
+            thinCrust.setSelected(false);
+            regularCrust.setSelected(false);
+            deepDishCrust.setSelected(false);
+
+        //clears toppings
+            pepBox.setSelected(false);
+            oliveBox.setSelected(false);
+            pepperBox.setSelected(false);
+            pineappleBox.setSelected(false);
+            hamBox.setSelected(false);
+            mushroomBox.setSelected(false);
+
+         //clear JTextArea
+        receipt.selectAll();
+        receipt.replaceSelection("");
+
+            beforeTax = 0;
+            toppingsTotal = 0;
+            sizePrice = 0;
+
 
     }
 
